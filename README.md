@@ -29,8 +29,21 @@ CLI tool for managing Ethereum validators via execution layer requests. This cli
 
 ## Build the application
 
-You can find the built binary in the `bin` folder after running the below commands.
+You will only find a binary for linux in the release section currently. This will change in the future. You need to build the application on your own if you have a different system/architecture.
 
-```bash
-npm run build && npm run package
-```
+1. Install [Node 22](https://nodejs.org/en)
+1. Install dependencies
+
+    ```bash
+    npm i
+    ```
+
+1. Build and package the application
+
+    ```bash
+    # allowed build targets are
+    # linux-x64, win-x64, macos-x64, linux-arm64, win-arm64, macos-arm64
+    npm run build && npm run package -- <YOUR_RUNNING_OS_AND_ARCHITECTURE>
+    ```
+
+1. Find the built binary in the `bin` folder
