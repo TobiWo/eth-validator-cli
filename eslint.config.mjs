@@ -46,6 +46,7 @@ export default [...compat.extends(
         "import/no-duplicates": "error",
         'eslint-plugin-tsdoc/syntax': 'warn'
     },
-
-    ignores: ['**/dist/', '**/bin/']
+}, 
+{
+    ignores: ['**/dist/', '**/bin/', '**/scripts/']
 }];
