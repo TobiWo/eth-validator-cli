@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc --build",
     "dev-start": "node -r ts-node/register ./src/cli/main.ts",
-    "package": "npx pkg . --targets node22-linux-x64,node22-win-x64,node22-macos-x64 --out-path ./bin",
+    "package": "node scripts/package.js",
     "start": "npm run build && node dist/cli/main.js"
   },
   "dependencies": {
