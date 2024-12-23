@@ -1,10 +1,9 @@
 import chalk from 'chalk';
-import { JsonRpcProvider, toBeHex, toBigInt, Wallet } from 'ethers';
 
-import * as serviceConstants from '../../constants/service';
 import { GlobalCliOptions } from '../../model/commander';
 import { networkConfig } from '../../network-config';
-import { createEthereumConnection, getRequiredFee } from './ethereum';
+import { createEthereumConnection } from './ethereum';
+import { sendExecutionLayerRequests } from './request';
 
 /**
  * Consolidate one or many validators to one or switch withdrawal credential type from 0x01 to 0x02
@@ -20,52 +19,17 @@ export async function consolidate(
 ): Promise<void> {
   logConsolidationWarning(targetValidatorPubkey);
   const ethereumConnection = await createEthereumConnection(globalOptions.jsonRpcUrl);
+  const consolidationRequestData: string[] = [];
   for (const sourceValidator of sourceValidatorPubkeys) {
-    const consolidationRequestData = createConsolidationRequestData(
-      sourceValidator,
-      targetValidatorPubkey
-    );
-    await sendConsolidationRequest(
-      ethereumConnection.provider,
-      ethereumConnection.wallet,
-      globalOptions.network,
-      consolidationRequestData
-    );
+    const request = createConsolidationRequestData(sourceValidator, targetValidatorPubkey);
+    consolidationRequestData.push(request);
   }
-}
-
-/**
- * Send consolidation request via json rpc connection
- *
- * @param jsonRpcProvider - The connected json rpc provider
- * @param wallet - The wallet from which request will be sent
- * @param network - The network used for loading network specific configuration
- * @param consolidationRequestData - The data sent to consolidation contract
- */
-async function sendConsolidationRequest(
-  jsonRpcProvider: JsonRpcProvider,
-  wallet: Wallet,
-  network: string,
-  consolidationRequestData: string
-) {
-  try {
-    const consolidationQueue = await jsonRpcProvider.getStorage(
-      networkConfig[network].consolidationContractAddress,
-      toBeHex(0)
-    );
-    const requiredFee =
-      getRequiredFee(toBigInt(consolidationQueue)) + serviceConstants.TRANSACTION_TIP;
-    const consolidationRequestTrx = {
-      to: networkConfig[network].consolidationContractAddress,
-      data: consolidationRequestData,
-      value: requiredFee
-    };
-    const response = await wallet.sendTransaction(consolidationRequestTrx);
-    await response.wait();
-    console.log('Sent execution layer request:', response.hash);
-  } catch (error) {
-    console.error('Error Sending Transaction:', error);
-  }
+  await sendExecutionLayerRequests(
+    networkConfig[globalOptions.network].consolidationContractAddress,
+    ethereumConnection.provider,
+    ethereumConnection.wallet,
+    consolidationRequestData
+  );
 }
 
 /**
