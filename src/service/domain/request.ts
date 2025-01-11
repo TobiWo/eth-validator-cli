@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import { JsonRpcProvider, toBeHex, toBigInt, TransactionReceipt, Wallet } from 'ethers';
 
+import * as serviceConstants from '../../constants/program';
 import { getRequiredFee } from './ethereum';
 
 /**
@@ -18,15 +19,18 @@ export async function sendExecutionLayerRequests(
   requestData: string[]
 ) {
   try {
-    const contractQueue = await jsonRpcProvider.getStorage(systemContractAddress, toBeHex(0));
-    const requiredFee = getRequiredFee(toBigInt(contractQueue) + toBigInt(requestData.length));
-    const broadcastedExecutionLayerRequests = await broadcastExecutionLayerRequests(
-      systemContractAddress,
-      wallet,
-      requestData,
-      requiredFee
-    );
-    await Promise.allSettled(mineExecutionLayerRequests(broadcastedExecutionLayerRequests));
+    const executionLayerRequestBatches = splitToBatches(requestData);
+    for (const batch of executionLayerRequestBatches) {
+      const contractQueue = await jsonRpcProvider.getStorage(systemContractAddress, toBeHex(0));
+      const requiredFee = getRequiredFee(toBigInt(contractQueue) + toBigInt(batch.length));
+      const broadcastedExecutionLayerRequests = await broadcastExecutionLayerRequests(
+        systemContractAddress,
+        wallet,
+        batch,
+        requiredFee
+      );
+      await Promise.allSettled(mineExecutionLayerRequests(broadcastedExecutionLayerRequests));
+    }
   } catch (error) {
     console.error('Error Sending Transaction:', error);
   }
@@ -52,7 +56,8 @@ async function broadcastExecutionLayerRequests(
     const executionLayerRequestTrx = {
       to: systemContractAddress,
       data: data,
-      value: requiredFee
+      value: requiredFee,
+      gasLimit: serviceConstants.TRANSACTION_GAS_LIMIT
     };
     const executionLayerRequestResponse = await wallet.sendTransaction(executionLayerRequestTrx);
     console.log(
@@ -86,4 +91,12 @@ function mineExecutionLayerRequests(
         console.error(error);
       })
   );
+}
+
+function splitToBatches(requestData: string[]): string[][] {
+  const batches: string[][] = [];
+  for (let i = 0; i < requestData.length; i += serviceConstants.BATCH_SIZE) {
+    batches.push(requestData.slice(i, i + serviceConstants.BATCH_SIZE));
+  }
+  return batches;
 }
