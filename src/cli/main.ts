@@ -19,7 +19,7 @@ program
       `-n, --${networkOptionName} <network>`,
       'Ethereum network which will be used for request processing'
     )
-      .choices(['mekong'])
+      .choices(['mekong', 'kurtosis'])
       .makeOptionMandatory(true)
       .default('mekong')
   )
