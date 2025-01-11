@@ -2,7 +2,7 @@ import { PublicKey } from '@chainsafe/blst';
 import { InvalidArgumentError } from 'commander';
 import { JsonRpcProvider } from 'ethers';
 
-import { VALID_URL_PREFIXES } from '../constants/service';
+import { VALID_URL_PREFIXES } from '../constants/program';
 import { networkConfig } from '../network-config';
 
 /**

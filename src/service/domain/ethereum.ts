@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { JsonRpcProvider, Wallet } from 'ethers';
 
-import * as serviceConstants from '../../constants/service';
+import * as serviceConstants from '../../constants/program';
 import { EthereumConnection } from '../../model/ethereum';
 import { promptSecret } from '../prompt';
 
