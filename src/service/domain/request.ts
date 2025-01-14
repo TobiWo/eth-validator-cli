@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import { JsonRpcProvider, toBeHex, toBigInt, TransactionReceipt, Wallet } from 'ethers';
+import { median } from 'mathjs';
 
 import * as serviceConstants from '../../constants/program';
 import { getRequiredFee } from './ethereum';
@@ -22,7 +23,11 @@ export async function sendExecutionLayerRequests(
     const executionLayerRequestBatches = splitToBatches(requestData);
     for (const batch of executionLayerRequestBatches) {
       const contractQueue = await jsonRpcProvider.getStorage(systemContractAddress, toBeHex(0));
-      const requiredFee = getRequiredFee(toBigInt(contractQueue) + toBigInt(batch.length));
+      const requiredFee = getRequiredFee(
+        toBigInt(contractQueue) +
+          toBigInt(await calculateMedianContractQueueLength(systemContractAddress, jsonRpcProvider))
+      );
+      console.log(`Current required fee: ${requiredFee}`);
       const broadcastedExecutionLayerRequests = await broadcastExecutionLayerRequests(
         systemContractAddress,
         wallet,
@@ -34,6 +39,70 @@ export async function sendExecutionLayerRequests(
   } catch (error) {
     console.error('Error Sending Transaction:', error);
   }
+}
+
+/**
+ * Split array of request data to batches
+ *
+ * @param requestData - The list of execution layer request data
+ * @returns The list of request data batches
+ */
+function splitToBatches(requestData: string[]): string[][] {
+  const batches: string[][] = [];
+  for (let i = 0; i < requestData.length; i += serviceConstants.BATCH_SIZE) {
+    batches.push(requestData.slice(i, i + serviceConstants.BATCH_SIZE));
+  }
+  return batches;
+}
+
+/**
+ * Calculate the median contract queue length over the last 50 blocks.
+ * This is added to the actual contract queue length in order to prevent transaction reverts
+ * when a request batch will be included in multiple blocks.
+ *
+ * @param systemContractAddress - The system contract where the request is sent to
+ * @param jsonRpcProvider - The connected json rpc provider
+ * @returns The median contract queue length for the last 50 blocks
+ */
+async function calculateMedianContractQueueLength(
+  contractAddress: string,
+  jsonRpcProvider: JsonRpcProvider
+): Promise<number> {
+  try {
+    const numberOflogsByBlock = await getNumberOfLogsByBlock(contractAddress, jsonRpcProvider);
+    const medianContractQueueLength = median(numberOflogsByBlock);
+    return medianContractQueueLength;
+  } catch (error) {
+    console.error('Error fetching logs:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch system contract logs to get a list with number of logs by block
+ *
+ * @param systemContractAddress - The system contract where the request is sent to
+ * @param jsonRpcProvider - The connected json rpc provider
+ * @returns The list of number of logs by blocks
+ */
+async function getNumberOfLogsByBlock(
+  contractAddress: string,
+  jsonRpcProvider: JsonRpcProvider
+): Promise<number[]> {
+  const currentBlock = await jsonRpcProvider.getBlockNumber();
+  const startBlock = currentBlock - (serviceConstants.NUMBER_OF_BLOCKS_FOR_LOG_LOOKUP - 1);
+  const logs = await jsonRpcProvider.getLogs({
+    address: contractAddress,
+    fromBlock: startBlock,
+    toBlock: currentBlock
+  });
+  const numberOflogsByBlock = new Map(
+    Array.from({ length: currentBlock - startBlock + 1 }, (_, i) => [startBlock + i, 0])
+  );
+  for (const log of logs) {
+    numberOflogsByBlock.set(log.blockNumber, (numberOflogsByBlock.get(log.blockNumber) || 0) + 1);
+  }
+  return [...numberOflogsByBlock.values()];
 }
 
 /**
@@ -91,12 +160,4 @@ function mineExecutionLayerRequests(
         console.error(error);
       })
   );
-}
-
-function splitToBatches(requestData: string[]): string[][] {
-  const batches: string[][] = [];
-  for (let i = 0; i < requestData.length; i += serviceConstants.BATCH_SIZE) {
-    batches.push(requestData.slice(i, i + serviceConstants.BATCH_SIZE));
-  }
-  return batches;
 }
