@@ -3,7 +3,11 @@
 import { Command, Option } from 'commander';
 
 import { GlobalCliOptions } from '../model/commander';
-import { parseAndValidateJsonRpcUrl, validateNetwork } from '../service/cli-validation';
+import {
+  parseAndValidateJsonRpcUrl,
+  parseAndValidateMaxNumberOfRequestsPerBlock,
+  validateNetwork
+} from '../service/cli-validation';
 import { consolidateCommand } from './consolidate';
 import { switchWithdrawalCredentialTypeCommand } from './switch';
 
@@ -11,6 +15,7 @@ const program = new Command();
 
 const networkOptionName = 'network';
 const jsonRpcOptionName = 'json-rpc-url';
+const maxRequestsPerBlockOptionName = 'max-requests-per-block';
 
 program
   .name('eth-validator-cli')
@@ -28,6 +33,12 @@ program
     'Json rpc url which is used to connect to the defined network',
     parseAndValidateJsonRpcUrl,
     'http://localhost:8545'
+  )
+  .requiredOption(
+    `-m, --${maxRequestsPerBlockOptionName} <number>`,
+    'Max. number of sent execution layer requests per block',
+    parseAndValidateMaxNumberOfRequestsPerBlock,
+    10
   )
   .hook('preSubcommand', (thisCommand) => {
     const globalOptions: GlobalCliOptions = thisCommand.opts();
