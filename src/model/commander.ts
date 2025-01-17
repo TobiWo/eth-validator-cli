@@ -6,4 +6,5 @@ export interface ConsolidationOptions {
 export interface GlobalCliOptions {
   network: string;
   jsonRpcUrl: string;
+  maxRequestsPerBlock: number;
 }
