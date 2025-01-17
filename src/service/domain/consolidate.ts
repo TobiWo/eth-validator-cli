@@ -28,7 +28,8 @@ export async function consolidate(
     networkConfig[globalOptions.network].consolidationContractAddress,
     ethereumConnection.provider,
     ethereumConnection.wallet,
-    consolidationRequestData
+    consolidationRequestData,
+    globalOptions.maxRequestsPerBlock
   );
 }
 

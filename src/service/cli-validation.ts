@@ -89,6 +89,28 @@ export async function validateNetwork(jsonRpcUrl: string, network: string): Prom
 }
 
 /**
+ * Check if provided max. number of requests per block is a actual number and does not exceed
+ * a the number of execution layer requests which would fit into a single block.
+ *
+ * @param maxNumberOfRequests - The maximal number of requests allowed in a single block
+ * @returns The validated maximal number of requests allowed in a single block
+ */
+export function parseAndValidateMaxNumberOfRequestsPerBlock(maxNumberOfRequests: string): number {
+  const parsedNumber = parseInt(maxNumberOfRequests);
+  if (isNaN(parsedNumber)) {
+    throw new InvalidArgumentError(`Number of max. requests per block should be a number`);
+  }
+  if (parsedNumber > 220) {
+    throw new InvalidArgumentError(
+      `Provided maximal number of requests per block is too high. 
+      The estimated max. per block is 220-230 requests. If this is exceeded the probability increases that 
+      that request transactions will be reverted due to an insufficient fee calculated for the requests.`
+    );
+  }
+  return parsedNumber;
+}
+
+/**
  * Add 0x suffix to validator pubkey if not present
  *
  * @param validatorPubKey - The validator pubkey to check

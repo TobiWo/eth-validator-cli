@@ -1,5 +1,12 @@
 import chalk from 'chalk';
-import { JsonRpcProvider, toBeHex, toBigInt, TransactionReceipt, Wallet } from 'ethers';
+import {
+  JsonRpcProvider,
+  toBeHex,
+  toBigInt,
+  Transaction,
+  TransactionReceipt,
+  Wallet
+} from 'ethers';
 import { median } from 'mathjs';
 
 import * as serviceConstants from '../../constants/program';
@@ -17,17 +24,20 @@ export async function sendExecutionLayerRequests(
   systemContractAddress: string,
   jsonRpcProvider: JsonRpcProvider,
   wallet: Wallet,
-  requestData: string[]
+  requestData: string[],
+  executionLayerRequestBatchSize: number
 ) {
   try {
-    const executionLayerRequestBatches = splitToBatches(requestData);
+    const executionLayerRequestBatches = splitToBatches(
+      requestData,
+      executionLayerRequestBatchSize
+    );
     for (const batch of executionLayerRequestBatches) {
       const contractQueue = await jsonRpcProvider.getStorage(systemContractAddress, toBeHex(0));
       const requiredFee = getRequiredFee(
         toBigInt(contractQueue) +
           toBigInt(await calculateMedianContractQueueLength(systemContractAddress, jsonRpcProvider))
       );
-      console.log(`Current required fee: ${requiredFee}`);
       const broadcastedExecutionLayerRequests = await broadcastExecutionLayerRequests(
         systemContractAddress,
         wallet,
@@ -47,10 +57,10 @@ export async function sendExecutionLayerRequests(
  * @param requestData - The list of execution layer request data
  * @returns The list of request data batches
  */
-function splitToBatches(requestData: string[]): string[][] {
+function splitToBatches(requestData: string[], batchSize: number): string[][] {
   const batches: string[][] = [];
-  for (let i = 0; i < requestData.length; i += serviceConstants.BATCH_SIZE) {
-    batches.push(requestData.slice(i, i + serviceConstants.BATCH_SIZE));
+  for (let i = 0; i < requestData.length; i += batchSize) {
+    batches.push(requestData.slice(i, i + batchSize));
   }
   return batches;
 }
@@ -122,12 +132,7 @@ async function broadcastExecutionLayerRequests(
 ): Promise<Promise<null | TransactionReceipt>[]> {
   const broadcastedExecutionLayerRequests: Promise<null | TransactionReceipt>[] = [];
   for (const data of requestData) {
-    const executionLayerRequestTrx = {
-      to: systemContractAddress,
-      data: data,
-      value: requiredFee,
-      gasLimit: serviceConstants.TRANSACTION_GAS_LIMIT
-    };
+    const executionLayerRequestTrx = createTransaction(systemContractAddress, data, requiredFee);
     const executionLayerRequestResponse = await wallet.sendTransaction(executionLayerRequestTrx);
     console.log(
       chalk.yellow(
@@ -139,6 +144,27 @@ async function broadcastExecutionLayerRequests(
     broadcastedExecutionLayerRequests.push(executionLayerRequestResponse.wait());
   }
   return broadcastedExecutionLayerRequests;
+}
+
+/**
+ * Create an execution layer request transaction
+ *
+ * @param systemContractAddress - The system contract where the request is sent to
+ * @param requestData - The data sent to system contract
+ * @param requiredFee - The fee which needs to be sent with the request
+ * @returns The execution layer request transaction
+ */
+function createTransaction(
+  systemContractAddress: string,
+  requestData: string,
+  requiredFee: bigint
+): Transaction {
+  const executionLayerRequestTrx = new Transaction();
+  executionLayerRequestTrx.to = systemContractAddress;
+  executionLayerRequestTrx.data = requestData;
+  executionLayerRequestTrx.value = requiredFee;
+  executionLayerRequestTrx.gasLimit = serviceConstants.TRANSACTION_GAS_LIMIT;
+  return executionLayerRequestTrx;
 }
 
 /**
