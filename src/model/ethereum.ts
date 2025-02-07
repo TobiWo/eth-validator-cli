@@ -1,7 +1,7 @@
-import { JsonRpcProvider, Wallet } from 'ethers';
+import { JsonRpcProvider, NonceManager } from 'ethers';
 
 export interface EthereumConnection {
-  wallet: Wallet;
+  wallet: NonceManager;
   provider: JsonRpcProvider;
 }
 

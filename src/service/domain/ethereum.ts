@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { JsonRpcProvider, Wallet } from 'ethers';
+import { JsonRpcProvider, NonceManager, Wallet } from 'ethers';
 
 import * as serviceConstants from '../../constants/program';
 import { EthereumConnection } from '../../model/ethereum';
@@ -15,7 +15,8 @@ export async function createEthereumConnection(jsonRpcUrl: string): Promise<Ethe
   try {
     const provider = new JsonRpcProvider(jsonRpcUrl);
     const privateKey = await promptSecret('Private key for 0x01 or 0x02 withdrawal credentials:');
-    return { wallet: new Wallet(privateKey, provider), provider: provider };
+    const wallet = new Wallet(privateKey, provider);
+    return { wallet: new NonceManager(wallet), provider: provider };
   } catch {
     console.error(
       chalk.red(
