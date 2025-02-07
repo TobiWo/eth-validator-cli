@@ -7,4 +7,4 @@ export const CONSOLIDATION_REQUEST_FEE_UPDATE_FRACTION = 17n;
 
 // Request constants
 export const NUMBER_OF_BLOCKS_FOR_LOG_LOOKUP = 50;
-export const TRANSACTION_GAS_LIMIT = 200000;
+export const TRANSACTION_GAS_LIMIT = 200000n;
