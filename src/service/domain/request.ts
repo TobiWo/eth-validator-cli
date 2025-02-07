@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { JsonRpcProvider, toBeHex, toBigInt, TransactionReceipt, Wallet } from 'ethers';
+import { JsonRpcProvider, NonceManager, toBeHex, toBigInt, TransactionReceipt } from 'ethers';
 import { median } from 'mathjs';
 
 import * as serviceConstants from '../../constants/program';
@@ -17,7 +17,7 @@ import { getRequiredFee } from './ethereum';
 export async function sendExecutionLayerRequests(
   systemContractAddress: string,
   jsonRpcProvider: JsonRpcProvider,
-  wallet: Wallet,
+  wallet: NonceManager,
   requestData: string[],
   executionLayerRequestBatchSize: number
 ) {
@@ -120,7 +120,7 @@ async function getNumberOfLogsByBlock(
  */
 async function broadcastExecutionLayerRequests(
   systemContractAddress: string,
-  wallet: Wallet,
+  wallet: NonceManager,
   requestData: string[],
   requiredFee: bigint
 ): Promise<Promise<null | TransactionReceipt>[]> {
