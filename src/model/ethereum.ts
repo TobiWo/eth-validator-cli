@@ -10,3 +10,10 @@ export interface NetworkConfig {
   withdrawalContractAddress: string;
   chainId: bigint;
 }
+
+export interface ExecutionLayerRequestTransaction {
+  to: string;
+  data: string;
+  value: bigint;
+  gasLimit: bigint;
+}

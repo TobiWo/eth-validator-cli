@@ -1,15 +1,9 @@
 import chalk from 'chalk';
-import {
-  JsonRpcProvider,
-  toBeHex,
-  toBigInt,
-  Transaction,
-  TransactionReceipt,
-  Wallet
-} from 'ethers';
+import { JsonRpcProvider, toBeHex, toBigInt, TransactionReceipt, Wallet } from 'ethers';
 import { median } from 'mathjs';
 
 import * as serviceConstants from '../../constants/program';
+import { ExecutionLayerRequestTransaction } from '../../model/ethereum';
 import { getRequiredFee } from './ethereum';
 
 /**
@@ -132,7 +126,7 @@ async function broadcastExecutionLayerRequests(
 ): Promise<Promise<null | TransactionReceipt>[]> {
   const broadcastedExecutionLayerRequests: Promise<null | TransactionReceipt>[] = [];
   for (const data of requestData) {
-    const executionLayerRequestTrx = createTransaction(systemContractAddress, data, requiredFee);
+    const executionLayerRequestTrx = createElTransaction(systemContractAddress, data, requiredFee);
     const executionLayerRequestResponse = await wallet.sendTransaction(executionLayerRequestTrx);
     console.log(
       chalk.yellow(
@@ -154,16 +148,17 @@ async function broadcastExecutionLayerRequests(
  * @param requiredFee - The fee which needs to be sent with the request
  * @returns The execution layer request transaction
  */
-function createTransaction(
+function createElTransaction(
   systemContractAddress: string,
   requestData: string,
   requiredFee: bigint
-): Transaction {
-  const executionLayerRequestTrx = new Transaction();
-  executionLayerRequestTrx.to = systemContractAddress;
-  executionLayerRequestTrx.data = requestData;
-  executionLayerRequestTrx.value = requiredFee;
-  executionLayerRequestTrx.gasLimit = serviceConstants.TRANSACTION_GAS_LIMIT;
+): ExecutionLayerRequestTransaction {
+  const executionLayerRequestTrx: ExecutionLayerRequestTransaction = {
+    to: systemContractAddress,
+    data: requestData,
+    value: requiredFee,
+    gasLimit: serviceConstants.TRANSACTION_GAS_LIMIT
+  };
   return executionLayerRequestTrx;
 }
 
