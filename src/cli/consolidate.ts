@@ -1,11 +1,11 @@
 import { Command } from 'commander';
 
 import { ConsolidationOptions, GlobalCliOptions } from '../model/commander';
+import { consolidate } from '../service/domain/consolidate';
 import {
   parseAndValidateValidatorPubKey,
   parseAndValidateValidatorPubKeys
-} from '../service/cli-validation';
-import { consolidate } from '../service/domain/consolidate';
+} from '../service/validation/cli';
 
 const consolidateCommand = new Command();
 
