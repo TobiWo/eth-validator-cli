@@ -2,20 +2,20 @@ import { PublicKey } from '@chainsafe/blst';
 import { InvalidArgumentError } from 'commander';
 import { JsonRpcProvider } from 'ethers';
 
-import { VALID_URL_PREFIXES } from '../constants/program';
-import { networkConfig } from '../network-config';
+import { VALID_URL_PREFIXES } from '../../constants/program';
+import { networkConfig } from '../../network-config';
 
 /**
  * Check if json rpc url is correctly formatted
  *
- * @param jsonRpcUrl - The json rpc url
+ * @param nodeUrl - The json rpc url
  * @returns The json rpc url
  */
-export function parseAndValidateJsonRpcUrl(jsonRpcUrl: string): string {
-  if (!VALID_URL_PREFIXES.some((prefix) => jsonRpcUrl.startsWith(prefix))) {
-    throw new InvalidArgumentError('Json rpc url should start with http:// or https://');
+export function parseAndValidateNodeUrl(nodeUrl: string): string {
+  if (!VALID_URL_PREFIXES.some((prefix) => nodeUrl.startsWith(prefix))) {
+    throw new InvalidArgumentError('The provided url should start with http:// or https://');
   }
-  return jsonRpcUrl;
+  return nodeUrl;
 }
 
 /**
