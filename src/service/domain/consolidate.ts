@@ -2,6 +2,7 @@ import chalk from 'chalk';
 
 import { GlobalCliOptions } from '../../model/commander';
 import { networkConfig } from '../../network-config';
+import { checkWithdrawalCredentialType } from '../validation/pre-request';
 import { createEthereumConnection } from './ethereum';
 import { sendExecutionLayerRequests } from './request';
 
@@ -17,6 +18,7 @@ export async function consolidate(
   sourceValidatorPubkeys: string[],
   targetValidatorPubkey?: string
 ): Promise<void> {
+  await checkWithdrawalCredentialType(globalOptions.beaconApiUrl, targetValidatorPubkey);
   logConsolidationWarning(targetValidatorPubkey);
   const ethereumConnection = await createEthereumConnection(globalOptions.jsonRpcUrl);
   const consolidationRequestData: string[] = [];
