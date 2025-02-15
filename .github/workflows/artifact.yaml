@@ -1,0 +1,91 @@
+name: "Build Cross-Platform Binaries"
+
+on:
+  release:
+    types: ["created"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: "Build on ${{ matrix.os }}"
+    runs-on: "${{ matrix.os }}"
+    strategy:
+      matrix:
+        include:
+          - os: "ubuntu-latest"
+            TARGET: "linux-x64"
+            PLATFORM: "linux"
+          - os: "macos-latest"
+            TARGET: "macos-x64"
+            PLATFORM: "darwin"
+          - os: "windows-latest"
+            TARGET: "win-x64"
+            PLATFORM: "win"
+
+    steps:
+      - uses: "actions/checkout@v4"
+
+      - name: "Setup Node.js"
+        uses: "actions/setup-node@v4"
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: "Install global dependencies"
+        run: "npm install -g @yao-pkg/pkg@6.3.0 typescript@5.7.3"
+
+      - name: "Install production dependencies"
+        run: "npm ci --omit=dev"
+
+      - name: "Build application"
+        run: "npm run build"
+
+      - name: "Package application"
+        run: "pkg . --targets node22-${{ matrix.TARGET }} --out-path ./bin"
+
+      - name: "Create compressed archive"
+        run: |
+          cd bin
+          if [ "${{ matrix.PLATFORM }}" == "win" ]; then
+            tar -czvf eth-validator-cli-${{ matrix.PLATFORM }}-x64.tar.gz eth-validator-cli.exe
+          else
+            tar -czvf eth-validator-cli-${{ matrix.PLATFORM }}-x64.tar.gz eth-validator-cli
+          fi
+
+      - name: "Upload artifact"
+        uses: "actions/upload-artifact@v4"
+        with:
+          name: "eth-validator-cli-${{ matrix.PLATFORM }}-x64"
+          path: "bin/eth-validator-cli-${{ matrix.PLATFORM }}-x64.tar.gz"
+          retention-days: 5
+
+  attach-artifacts:
+    name: "Attach artifacts to release"
+    needs: "build"
+    runs-on: "ubuntu-latest"
+    if: "github.event_name == 'release'"
+
+    steps:
+      - name: "Download all artifacts"
+        uses: "actions/download-artifact@v4"
+
+      - name: "Upload release assets"
+        uses: "actions/github-script@v7"
+        with:
+          github-token: "${{secrets.GITHUB_TOKEN}}"
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const releaseId = context.payload.release.id;
+
+            for (const file of await fs.promises.readdir('.')) {
+              if (file.startsWith('eth-validator-cli-') && file.endsWith('.tar.gz')) {
+                await github.rest.repos.uploadReleaseAsset({
+                  owner,
+                  repo,
+                  release_id: releaseId,
+                  name: file,
+                  data: await fs.promises.readFile(file)
+                });
+              }
+            }
