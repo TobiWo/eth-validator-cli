@@ -1,7 +1,8 @@
 import chalk from 'chalk';
 import { JsonRpcProvider, NonceManager, Wallet } from 'ethers';
 
-import * as serviceConstants from '../../constants/program';
+import * as serviceConstants from '../../constants/application';
+import * as logging from '../../constants/logging';
 import { EthereumConnection } from '../../model/ethereum';
 import { promptSecret } from '../prompt';
 
@@ -14,15 +15,12 @@ import { promptSecret } from '../prompt';
 export async function createEthereumConnection(jsonRpcUrl: string): Promise<EthereumConnection> {
   try {
     const provider = new JsonRpcProvider(jsonRpcUrl);
-    const privateKey = await promptSecret('Private key for 0x01 or 0x02 withdrawal credentials:');
+    await provider.getNetwork();
+    const privateKey = await promptSecret(chalk.green(logging.PROMPT_PRIVATE_KEY_INFO));
     const wallet = new Wallet(privateKey, provider);
     return { wallet: new NonceManager(wallet), provider: provider };
   } catch {
-    console.error(
-      chalk.red(
-        'The provided private key does not have the correct format and/or length! Please double-check!'
-      )
-    );
+    console.error(chalk.red(logging.INVALID_PRIVATE_KEY_ERROR));
     process.exit(1);
   }
 }

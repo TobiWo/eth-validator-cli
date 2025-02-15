@@ -1,5 +1,7 @@
 import chalk from 'chalk';
 
+import { PREFIX_0x } from '../../constants/application';
+import * as logging from '../../constants/logging';
 import { GlobalCliOptions } from '../../model/commander';
 import { networkConfig } from '../../network-config';
 import { checkWithdrawalCredentialType } from '../validation/pre-request';
@@ -46,7 +48,7 @@ function createConsolidationRequestData(
   sourceValidatorPubkey: string,
   targetValidatorPubkey?: string
 ): string {
-  let consolidationRequestData = '0x'.concat(sourceValidatorPubkey.substring(2));
+  let consolidationRequestData = PREFIX_0x.concat(sourceValidatorPubkey.substring(2));
   if (targetValidatorPubkey) {
     consolidationRequestData = consolidationRequestData.concat(targetValidatorPubkey.substring(2));
   } else {
@@ -62,10 +64,6 @@ function createConsolidationRequestData(
  */
 function logConsolidationWarning(targetValidatorPubkey?: string): void {
   if (targetValidatorPubkey) {
-    console.log(
-      chalk.yellow(
-        'Attention: You can only consolidate validators with the same withdrawal credentials!'
-      )
-    );
+    console.log(chalk.yellow(logging.WITHDRAWAL_CREDENTIAL_WARNING));
   }
 }

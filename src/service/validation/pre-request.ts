@@ -1,7 +1,14 @@
 import chalk from 'chalk';
 import { exit } from 'process';
 import { fetch, Response } from 'undici';
+import { format } from 'util';
 
+import {
+  VALIDATOR_STATE_BEACON_API_ENDPOINT,
+  WITHDRAWAL_CREDENTIALS_0x00,
+  WITHDRAWAL_CREDENTIALS_0x02
+} from '../../constants/application';
+import * as logging from '../../constants/logging';
 import { ValidatorResponse } from '../../model/ethereum';
 
 /**
@@ -16,7 +23,7 @@ export async function checkWithdrawalCredentialType(
 ): Promise<void> {
   if (!targetValidatorPubKey) return;
   try {
-    const url = `${beaconApiUrl}/eth/v1/beacon/states/head/validators/${targetValidatorPubKey}`;
+    const url = `${beaconApiUrl}${VALIDATOR_STATE_BEACON_API_ENDPOINT}${targetValidatorPubKey}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -26,14 +33,14 @@ export async function checkWithdrawalCredentialType(
     const data = (await response.json()) as ValidatorResponse;
 
     const withdrawalCredentialsType = data.data.validator.withdrawal_credentials.substring(0, 4);
-    if (withdrawalCredentialsType !== '0x02') {
+    if (withdrawalCredentialsType !== WITHDRAWAL_CREDENTIALS_0x02) {
       await handleWithdrawalCredentialsType(withdrawalCredentialsType);
     }
   } catch (error) {
     if (error instanceof TypeError) {
-      console.error(chalk.red('Error while calling beacon API endpoint:', error.cause));
+      console.error(chalk.red(logging.BEACON_API_ERROR, error.cause));
     } else {
-      console.error(chalk.red('Unexpected error:', error));
+      console.error(chalk.red(logging.UNEXPECTED_BEACON_API_ERROR, error));
     }
     exit(1);
   }
@@ -45,8 +52,8 @@ export async function checkWithdrawalCredentialType(
  * @param response - The response object
  */
 async function handleErrorResponse(response: Response) {
-  console.error(chalk.red(`Error while calling beacon API endpoint: ${response.statusText}`));
-  console.error(chalk.red(`Response error: ${response.status} - ${await response.text()}`));
+  console.error(chalk.red(logging.BEACON_API_ERROR, response.statusText));
+  console.error(chalk.red(logging.RESPONSE_ERROR, response.status, '-', await response.text()));
   exit(1);
 }
 
@@ -57,24 +64,12 @@ async function handleErrorResponse(response: Response) {
  */
 async function handleWithdrawalCredentialsType(withdrawalCredentialsType: string) {
   console.error(
-    chalk.red(
-      `Your target validator has withdrawal credentials of type: ${withdrawalCredentialsType}.`,
-      'It needs to have 0x02 credentials. Please update your withdrawal credentials.'
-    )
+    chalk.red(format(logging.GENERAL_WRONG_WITHDRAWAL_CREDENTIALS_ERROR, withdrawalCredentialsType))
   );
-  if (withdrawalCredentialsType === '0x00') {
-    console.error(
-      chalk.red(
-        'You cannot directly change the withdrawal credentials to type 0x02. You need to change to type 0x01 first.',
-        'Please follow the instructions here: https://github.com/ethereum/staking-deposit-cli?tab=readme-ov-file#generate-bls-to-execution-change-arguments or other respective documentation.'
-      )
-    );
+  if (withdrawalCredentialsType === WITHDRAWAL_CREDENTIALS_0x00) {
+    console.error(chalk.red(logging.WRONG_WITHDRAWAL_CREDENTIALS_0x00_ERROR));
   } else {
-    console.error(
-      chalk.red(
-        "You can change the withdrawal credential type from 0x01 to 0x02 using the 'switch' subcommand."
-      )
-    );
+    console.error(chalk.red(logging.WRONG_WITHDRAWAL_CREDENTIALS_0X01_ERROR));
   }
   exit(1);
 }

@@ -1,8 +1,10 @@
 import chalk from 'chalk';
 import { JsonRpcProvider, NonceManager, toBeHex, toBigInt, TransactionReceipt } from 'ethers';
 import { median } from 'mathjs';
+import { exit } from 'process';
 
-import * as serviceConstants from '../../constants/program';
+import * as serviceConstants from '../../constants/application';
+import * as logging from '../../constants/logging';
 import { ExecutionLayerRequestTransaction } from '../../model/ethereum';
 import { getRequiredFee } from './ethereum';
 
@@ -41,7 +43,7 @@ export async function sendExecutionLayerRequests(
       await Promise.allSettled(mineExecutionLayerRequests(broadcastedExecutionLayerRequests));
     }
   } catch (error) {
-    console.error('Error Sending Transaction:', error);
+    console.error(logging.SENDING_TRANSACTION_ERROR, error);
   }
 }
 
@@ -77,8 +79,8 @@ async function calculateMedianContractQueueLength(
     const medianContractQueueLength = median(numberOflogsByBlock);
     return medianContractQueueLength;
   } catch (error) {
-    console.error('Error fetching logs:', error);
-    throw error;
+    console.error(logging.FETCHING_LOGS_ERROR, error);
+    exit(1);
   }
 }
 
@@ -129,11 +131,7 @@ async function broadcastExecutionLayerRequests(
     const executionLayerRequestTrx = createElTransaction(systemContractAddress, data, requiredFee);
     const executionLayerRequestResponse = await wallet.sendTransaction(executionLayerRequestTrx);
     console.log(
-      chalk.yellow(
-        'Broadcasting execution layer request:',
-        executionLayerRequestResponse.hash,
-        '...'
-      )
+      chalk.yellow(logging.BROADCASTING_EL_REQUEST_INFO, executionLayerRequestResponse.hash, '...')
     );
     broadcastedExecutionLayerRequests.push(executionLayerRequestResponse.wait());
   }
@@ -174,7 +172,7 @@ function mineExecutionLayerRequests(
     broadcastedTransaction
       .then((broadcastResult) => {
         if (broadcastResult) {
-          console.log(chalk.green('Mined execution layer request:', broadcastResult.hash));
+          console.log(chalk.green(logging.MINED_EL_REQUEST_INFO, broadcastResult.hash));
         }
       })
       .catch((error) => {
