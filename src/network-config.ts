@@ -1,3 +1,7 @@
+import {
+  CONSOLIDATION_CONTRACT_ADDRESS,
+  WITHDRAWAL_CONTRACT_ADDRESS
+} from './constants/application';
 import { NetworkConfig } from './model/ethereum';
 
 export const networkConfig: Record<string, NetworkConfig> = {
@@ -6,9 +10,24 @@ export const networkConfig: Record<string, NetworkConfig> = {
     withdrawalContractAddress: '0x09Fc772D0857550724b07B850a4323f39112aAaA',
     chainId: 7078815900n
   },
-  kurtosis_pectra_devnet6: {
-    consolidationContractAddress: '0x0000BBdDc7CE488642fb579F8B00f3a590007251',
-    withdrawalContractAddress: '0x00000961Ef480Eb55e80D19ad83579A64c007002',
+  local_devnet: {
+    consolidationContractAddress: CONSOLIDATION_CONTRACT_ADDRESS,
+    withdrawalContractAddress: WITHDRAWAL_CONTRACT_ADDRESS,
     chainId: 3151908n
+  },
+  holesky: {
+    consolidationContractAddress: CONSOLIDATION_CONTRACT_ADDRESS,
+    withdrawalContractAddress: WITHDRAWAL_CONTRACT_ADDRESS,
+    chainId: 17000n
+  },
+  sepolia: {
+    consolidationContractAddress: CONSOLIDATION_CONTRACT_ADDRESS,
+    withdrawalContractAddress: WITHDRAWAL_CONTRACT_ADDRESS,
+    chainId: 11155111n
+  },
+  mainnet: {
+    consolidationContractAddress: CONSOLIDATION_CONTRACT_ADDRESS,
+    withdrawalContractAddress: WITHDRAWAL_CONTRACT_ADDRESS,
+    chainId: 1n
   }
 };
