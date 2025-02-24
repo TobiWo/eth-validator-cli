@@ -81,6 +81,7 @@ jobs:
       - name: "Upload release assets"
         uses: "softprops/action-gh-release@v2"
         with:
+          token: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
           tag_name: "${{ github.ref_name }}"
           generate_release_notes: "true"
           files: |
