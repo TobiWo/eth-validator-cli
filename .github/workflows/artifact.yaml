@@ -31,11 +31,8 @@ jobs:
           node-version: "22"
           cache: "npm"
 
-      - name: "Install global dependencies"
-        run: "npm install -g @yao-pkg/pkg@6.3.0 typescript@5.7.3"
-
-      - name: "Install production dependencies"
-        run: "npm ci --omit=dev"
+      - name: "Install dependencies"
+        run: "npm ci"
 
       - name: "Build application"
         run: "npm run build"
