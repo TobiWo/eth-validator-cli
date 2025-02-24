@@ -2,10 +2,9 @@
 name: "Build Cross-Platform Binaries"
 
 on:
-  create:
+  push:
     tags:
-      - "*"
-  workflow_dispatch: {}
+      - "v*.*.*"
 
 jobs:
   build:
