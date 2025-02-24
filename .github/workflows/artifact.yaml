@@ -38,7 +38,7 @@ jobs:
         run: "npm run build"
 
       - name: "Package application"
-        run: "pkg . --targets node22-${{ matrix.TARGET }} --out-path ./bin"
+        run: "npx pkg . --targets node22-${{ matrix.TARGET }} --out-path ./bin"
 
       - name: "Create compressed archive"
         run: |
