@@ -1,3 +1,4 @@
+---
 name: "Build Cross-Platform Binaries"
 
 on:
@@ -45,16 +46,16 @@ jobs:
         run: |
           cd bin
           if [ "${{ matrix.PLATFORM }}" == "win" ]; then
-            tar -czvf eth-validator-cli-${{ matrix.PLATFORM }}-x64.tar.gz eth-validator-cli.exe
+            tar -czvf eth-validator-cli-${{ matrix.PLATFORM }}-x64-${{ github.event.release.tag_name }}.tar.gz eth-validator-cli.exe
           else
-            tar -czvf eth-validator-cli-${{ matrix.PLATFORM }}-x64.tar.gz eth-validator-cli
+            tar -czvf eth-validator-cli-${{ matrix.PLATFORM }}-x64-${{ github.event.release.tag_name }}.tar.gz eth-validator-cli
           fi
 
       - name: "Upload artifact"
         uses: "actions/upload-artifact@v4"
         with:
-          name: "eth-validator-cli-${{ matrix.PLATFORM }}-x64"
-          path: "bin/eth-validator-cli-${{ matrix.PLATFORM }}-x64.tar.gz"
+          name: "eth-validator-cli-${{ matrix.PLATFORM }}-x64-${{ github.event.release.tag_name }}.tar.gz"
+          path: "bin/eth-validator-cli-${{ matrix.PLATFORM }}-x64-${{ github.event.release.tag_name }}.tar.gz"
           retention-days: 5
 
   attach-artifacts:
@@ -66,24 +67,24 @@ jobs:
     steps:
       - name: "Download all artifacts"
         uses: "actions/download-artifact@v4"
+        with:
+          path: "release-assets"
+
+      - name: "List downloaded artifact directories"
+        run: "ls -R release-assets"
+
+      - name: "Flatten artifacts"
+        run: |
+          find release-assets -type f -name "*.tar.gz" -exec mv {} . \;
+          echo "Files in workspace root after flattening:"
+          ls -la
 
       - name: "Upload release assets"
-        uses: "actions/github-script@v7"
+        uses: "softprops/action-gh-release@v2"
         with:
-          github-token: "${{secrets.GITHUB_TOKEN}}"
-          script: |
-            const fs = require('fs');
-            const { owner, repo } = context.repo;
-            const releaseId = context.payload.release.id;
-
-            for (const file of await fs.promises.readdir('.')) {
-              if (file.startsWith('eth-validator-cli-') && file.endsWith('.tar.gz')) {
-                await github.rest.repos.uploadReleaseAsset({
-                  owner,
-                  repo,
-                  release_id: releaseId,
-                  name: file,
-                  data: await fs.promises.readFile(file)
-                });
-              }
-            }
+          tag_name: "${{ github.event.release.tag_name }}"
+          files: |
+            eth-validator-cli-linux-x64-${{ github.event.release.tag_name }}.tar.gz
+            eth-validator-cli-darwin-x64-${{ github.event.release.tag_name }}.tar.gz
+            eth-validator-cli-win-x64-${{ github.event.release.tag_name }}.tar.gz
+...
