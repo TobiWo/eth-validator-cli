@@ -41,6 +41,7 @@ jobs:
         run: "npx pkg . --targets node22-${{ matrix.TARGET }} --out-path ./bin"
 
       - name: "Create compressed archive"
+        shell: "bash"
         run: |
           cd bin
           if [ "${{ matrix.PLATFORM }}" == "win" ]; then
