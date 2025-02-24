@@ -1,35 +1,70 @@
 # eth-validator-cli
 
-CLI tool for managing Ethereum validators via execution layer requests. This cli currently only supports validator related features included in the Pectra hardfork.
+CLI tool for managing Ethereum validators via execution layer requests. This cli currently only supports validator related features included in the Pectra hardfork. This might change in the future. The tool is especially useful if you need to manage multiple validators at once.
+
+Currently it only supports private keys as secret. This will change soon with e.g. hardware ledger support.
 
 **Please find the latest [release here](https://github.com/TobiWo/eth-validator-cli/releases).**
 
 ## Supported networks
 
-* mekong
+* Holesky
+* Sepolia
+* Mekong
+* local kurtosis devnet (based on pectra devnet-6 specs)
 
 ## Features
 
 * Consolidate one or multiple source validators to one target validator
 * Switch withdrawal credentials from type 0x01 to 0x02 (compounding)
 
+**Note: The application will request the secret e.g. the private key during runtime. You do not need to put the secret into the start command.**
+
+**Note: Withdrawals and exits are not available yet but will be added soon.**
+
+## Available cli options and commands
+
+Print the help message with `--help`. This works also for every subcommand.
+
+### Global Options
+
+| Short Option | Long Option | Description |
+| --- | --- | --- |
+| -n | --network | The network name which you want to connect to |
+| -r | --json-rpc-url | The json rpc endpoint which is used for sending execution layer requests |
+| -b | --beacon-api-url | The beacon api endpoint which is used for sanity checks like e.g.checking withdrawal credentials |
+| -m | --max-requests-per-block | The max. number of EL requests which are tried to be packaged into one block |
+
+### Switch
+
+| Short Option | Long Option | Description |
+| --- | --- | --- |
+| -v | --validator | Space separated list of validator pubkeys for which the withdrawal credential type will be changed to 0x02 |
+
+### Consolidate
+
+| Short Option | Long Option | Description |
+| --- | --- | --- |
+| -s | --source | Space separated list of validator pubkeys which will be consolidated into the target validator |
+| -t | --target | Target validator pubkey |
+
 ## Usage
 
 1. Send consolidation request
 
     ```bash
-    ./eth-validator-cli --json-rpc-url <CONNECTION_STRING_TO_JSON_RPC_ENDPOINT> consolidate --source <SPACE_SEPARATED_LIST_OF_VALIDATORS_WHICH_SHOULD_BE_CONSOLIDATED_INTO_TARGET_VALIDATOR> --target <TARGET_VALIDATOR>
+    ./eth-validator-cli --network <NETWORK_NAME> --json-rpc-url <CONNECTION_STRING_TO_JSON_RPC_ENDPOINT> --beacon-api-url <CONNECTION_STRING_TO_BEACON_API_ENDPOINT> consolidate --source <SPACE_SEPARATED_LIST_OF_VALIDATORS_WHICH_SHOULD_BE_CONSOLIDATED_INTO_TARGET_VALIDATOR> --target <TARGET_VALIDATOR>
     ```
 
 1. Send request for switching withdrawal credential type
 
     ```bash
-    ./eth-validator-cli --json-rpc-url <CONNECTION_STRING_TO_JSON_RPC_ENDPOINT> switch --validator <SPACE_SEPARATED_LIST_OF_VALIDATORS_FO_WHICH_TO_SWITCH_WITHDRAWAL_CREDENTIAL_TYPE>
+    ./eth-validator-cli --network <NETWORK_NAME> --json-rpc-url <CONNECTION_STRING_TO_JSON_RPC_ENDPOINT> --beacon-api-url <CONNECTION_STRING_TO_BEACON_API_ENDPOINT> switch --validator <SPACE_SEPARATED_LIST_OF_VALIDATORS_FOR_WHICH_TO_SWITCH_WITHDRAWAL_CREDENTIAL_TYPE>
     ```
 
 ## Build the application
 
-You will only find a binary for linux in the release section currently. This will change in the future. You need to build the application on your own if you have a different system/architecture.
+There are currently only x64 binaries available in the release section. ARM64 will follow soon. If you want to run the application on ARM please build it by youw own.
 
 1. Install [Node 22](https://nodejs.org/en)
 1. Install dependencies
@@ -50,7 +85,7 @@ You will only find a binary for linux in the release section currently. This wil
 
 ## Run local pectra devnet
 
-You can find a kurtosis devnet specification file in the `scripts` folder in order to run a local Ethereum devnet based on devnet-4 specs (which is the same as mekong is based on).
+You can find a kurtosis devnet specification file in the `scripts` folder in order to run a local Ethereum devnet based on pectra devnet-6 specs, which is contains the final specs for public testnets like holesky but also mainnet.
 
 ### Requirements
 
@@ -68,12 +103,12 @@ You can find a kurtosis devnet specification file in the `scripts` folder in ord
 1. Execute the script
 
     ```bash
-    ./start-kurtosis-pectra-devnet-4.sh
+    ./start-kurtosis-pectra-devnet-6.sh
     ```
 
 ### Mass switch withdrawal credentials
 
-In order to test staking related functionality you need to switch validator withdrawal credentials to type 0x01. This can be done with the script `switch-withdrawal-credentials-on-kurtosis-devnet.sh`. The script needs `curl` and `staking-deposit-cli` as dependencies. Please find the latter [here](https://github.com/ethereum/staking-deposit-cli/releases), extract the binary and put it into `/usr/local/bin` (or equivalent on Mac):
+In order to test staking related functionality you need to switch validator withdrawal credentials to type 0x01. This can be done with the script `switch-withdrawal-credentials-on-kurtosis-devnet.sh`. The script needs `curl`, `jq` and `staking-deposit-cli` as dependencies. Please find the latter [here](https://github.com/ethereum/staking-deposit-cli/releases), extract the binary and put it into `/usr/local/bin` (or equivalent on Mac):
 
 The following is a recommended example call:
 
@@ -86,7 +121,7 @@ Short explanation how to get the respective values:
 * Beacon node connection url can be obtained from the local devnet with:
 
     ```bash
-    kurtosis enclave inspect local-pectra-devnet-4
+    kurtosis enclave inspect local-pectra-devnet-6
     # Use the ports within the 5-digit range
     # These are the ones which are exposed to your localhost 
     ```
@@ -109,10 +144,26 @@ If you want to stop your testnet just run:
 kurtosis enclave stop local-pectra-devnet-4
 ```
 
-## Run eth-validator-cli on local devnet
+## Helper scripts
 
-If you want to run the `eth-validator-cli` on your local devnet you can use `create_public_key_list_for_consolidation.sh` to fetch public keys for multiple validators at once. The output is a space separated list of pubkeys as the `eth-validator-cli` expects it for the e.g. `consolidate` subcommand:
+Helper scripts can be used on a local devnet but also on any other network.
+
+### Create list of pubkeys for a range of validator indices
+
+This can be used for testing the mass consolidation or mass withdrawal credential switch on a local devnet.
 
 ```bash
-./create_public_key_list_for_consolidation.sh --beacon-node-url http://127.0.0.1:33006 --validator_start_index 0 --validator_stop_index 20
+./create-public-key-list-for-consolidation.sh --beacon-node-url <BEACON_NODE_URL> --validator-start-index <VALIDATOR_START_INDEX> --validator-stop-index <VALIDATOR_STOP_INDEX>
+```
+
+### Get validator status for a range of validator indices
+
+```bash
+./get-validator-status.sh --beacon-node-url <BEACON_NODE_URL> --validator-start-index <VALIDATOR_START_INDEX> --validator-stop-index <VALIDATOR_STOP_INDEX>
+```
+
+### Get validator withdrawal credentials for a range of validator indices
+
+```bash
+./get-validator-withdrawal-credentials.sh --beacon-node-url <BEACON_NODE_URL> --validator-start-index <VALIDATOR_START_INDEX> --validator-stop-index <VALIDATOR_STOP_INDEX>
 ```
