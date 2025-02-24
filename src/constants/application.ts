@@ -19,3 +19,7 @@ export const VALIDATOR_STATE_BEACON_API_ENDPOINT = '/eth/v1/beacon/states/head/v
 
 // General
 export const PREFIX_0x = '0x';
+
+// system contract addresses
+export const CONSOLIDATION_CONTRACT_ADDRESS = '0x0000BBdDc7CE488642fb579F8B00f3a590007251';
+export const WITHDRAWAL_CONTRACT_ADDRESS = '0x00000961Ef480Eb55e80D19ad83579A64c007002';
