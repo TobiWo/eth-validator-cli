@@ -4,10 +4,10 @@ import { Command, Option } from 'commander';
 
 import { GlobalCliOptions } from '../model/commander';
 import {
-  parseAndValidateJsonRpcUrl,
   parseAndValidateMaxNumberOfRequestsPerBlock,
+  parseAndValidateNodeUrl,
   validateNetwork
-} from '../service/cli-validation';
+} from '../service/validation/cli';
 import { consolidateCommand } from './consolidate';
 import { switchWithdrawalCredentialTypeCommand } from './switch';
 
@@ -15,6 +15,7 @@ const program = new Command();
 
 const networkOptionName = 'network';
 const jsonRpcOptionName = 'json-rpc-url';
+const beaconApiOptionName = 'beacon-api-url';
 const maxRequestsPerBlockOptionName = 'max-requests-per-block';
 
 program
@@ -24,15 +25,21 @@ program
       `-n, --${networkOptionName} <network>`,
       'Ethereum network which will be used for request processing'
     )
-      .choices(['mekong', 'kurtosis'])
+      .choices(['mekong', 'kurtosis_pectra_devnet6'])
       .makeOptionMandatory(true)
       .default('mekong')
   )
   .requiredOption(
     `-r, --${jsonRpcOptionName} <jsonRpcUrl>`,
     'Json rpc url which is used to connect to the defined network',
-    parseAndValidateJsonRpcUrl,
+    parseAndValidateNodeUrl,
     'http://localhost:8545'
+  )
+  .requiredOption(
+    `-b, --${beaconApiOptionName} <beaconApiUrl>`,
+    'Beacon api url which is used for pre transaction checks',
+    parseAndValidateNodeUrl,
+    'http://localhost:5052'
   )
   .requiredOption(
     `-m, --${maxRequestsPerBlockOptionName} <number>`,

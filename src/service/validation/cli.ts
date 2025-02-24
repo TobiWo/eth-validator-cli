@@ -1,21 +1,29 @@
 import { PublicKey } from '@chainsafe/blst';
-import { InvalidArgumentError } from 'commander';
+import chalk from 'chalk';
 import { JsonRpcProvider } from 'ethers';
+import { exit } from 'process';
+import { format } from 'util';
 
-import { VALID_URL_PREFIXES } from '../constants/program';
-import { networkConfig } from '../network-config';
+import {
+  MAX_NUMBER_OF_REQUESTS_PER_BLOCK,
+  PREFIX_0x,
+  VALID_URL_PREFIXES
+} from '../../constants/application';
+import * as logging from '../../constants/logging';
+import { networkConfig } from '../../network-config';
 
 /**
  * Check if json rpc url is correctly formatted
  *
- * @param jsonRpcUrl - The json rpc url
+ * @param nodeUrl - The json rpc url
  * @returns The json rpc url
  */
-export function parseAndValidateJsonRpcUrl(jsonRpcUrl: string): string {
-  if (!VALID_URL_PREFIXES.some((prefix) => jsonRpcUrl.startsWith(prefix))) {
-    throw new InvalidArgumentError('Json rpc url should start with http:// or https://');
+export function parseAndValidateNodeUrl(nodeUrl: string): string {
+  if (!VALID_URL_PREFIXES.some((prefix) => nodeUrl.startsWith(prefix))) {
+    console.error(chalk.red(logging.INVALID_URL_FORMAT_ERROR));
+    exit(1);
   }
-  return jsonRpcUrl;
+  return nodeUrl;
 }
 
 /**
@@ -27,7 +35,8 @@ export function parseAndValidateJsonRpcUrl(jsonRpcUrl: string): string {
 export function parseAndValidateAmount(amount: string): number {
   const parsedAmount = parseFloat(amount);
   if (isNaN(parsedAmount)) {
-    throw new InvalidArgumentError(`Amount should be a number`);
+    console.error(chalk.red(logging.INVALID_AMOUNT_ERROR));
+    exit(1);
   }
   return parsedAmount;
 }
@@ -43,7 +52,8 @@ export function parseAndValidateValidatorPubKey(validatorPubKey: string): string
     PublicKey.fromHex(validatorPubKey).keyValidate();
     return addPubKeyPrefix(validatorPubKey);
   } catch {
-    throw new InvalidArgumentError('Supplied validator pubkey is not valid');
+    console.error(chalk.red(logging.INVALID_VALIDATOR_PUBKEY_ERROR));
+    exit(1);
   }
 }
 
@@ -62,7 +72,8 @@ export function parseAndValidateValidatorPubKeys(
     PublicKey.fromHex(validatorPubKey).keyValidate();
     return [...previous, addPubKeyPrefix(validatorPubKey)];
   } catch {
-    throw new InvalidArgumentError('One or many of the supplied validator pubkeys are not valid');
+    console.error(chalk.red(logging.INVALID_VALIDATORS_PUBKEY_ERROR));
+    exit(1);
   }
 }
 
@@ -77,14 +88,21 @@ export async function validateNetwork(jsonRpcUrl: string, network: string): Prom
     const jsonRpcProvider = new JsonRpcProvider(jsonRpcUrl);
     const connectedNetwork = await jsonRpcProvider.getNetwork();
     if (connectedNetwork.chainId != networkConfig[network].chainId) {
-      throw new InvalidArgumentError(
-        `Provided json rpc url is not connected to network ${network}! Url points to ${connectedNetwork.name} with chainid ${connectedNetwork.chainId}`
+      console.error(
+        chalk.red(
+          format(
+            logging.WRONG_CONNECTED_NETWORK_ERROR,
+            network,
+            connectedNetwork.name,
+            connectedNetwork.chainId
+          )
+        )
       );
+      exit(1);
     }
   } catch (error) {
-    throw new InvalidArgumentError(
-      `Error while trying to open connection for provided json rpc url: ${error}`
-    );
+    console.error(chalk.red(logging.GENERAL_JSON_RPC_ERROR), error);
+    exit(1);
   }
 }
 
@@ -98,14 +116,12 @@ export async function validateNetwork(jsonRpcUrl: string, network: string): Prom
 export function parseAndValidateMaxNumberOfRequestsPerBlock(maxNumberOfRequests: string): number {
   const parsedNumber = parseInt(maxNumberOfRequests);
   if (isNaN(parsedNumber)) {
-    throw new InvalidArgumentError(`Number of max. requests per block should be a number`);
+    console.error(chalk.red(logging.INVALID_REQUESTS_PER_BLOCK_ERROR));
+    exit(1);
   }
-  if (parsedNumber > 220) {
-    throw new InvalidArgumentError(
-      `Provided maximal number of requests per block is too high. 
-      The estimated max. per block is 220-230 requests. If this is exceeded the probability increases that 
-      that request transactions will be reverted due to an insufficient fee calculated for the requests.`
-    );
+  if (parsedNumber > MAX_NUMBER_OF_REQUESTS_PER_BLOCK) {
+    console.error(chalk.red(logging.TOO_MANY_REQUESTS_PER_BLOCK_ERROR));
+    exit(1);
   }
   return parsedNumber;
 }
@@ -117,8 +133,8 @@ export function parseAndValidateMaxNumberOfRequestsPerBlock(maxNumberOfRequests:
  * @returns The validator pubkey with suffix 0x
  */
 function addPubKeyPrefix(validatorPubKey: string): string {
-  if (!validatorPubKey.startsWith('0x')) {
-    validatorPubKey = '0x'.concat(validatorPubKey);
+  if (!validatorPubKey.startsWith(PREFIX_0x)) {
+    validatorPubKey = PREFIX_0x.concat(validatorPubKey);
   }
   return validatorPubKey;
 }

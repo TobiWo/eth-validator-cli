@@ -11,6 +11,24 @@ add_to_validator_list() {
   fi
 }
 
+# Check for dependent binaries
+check_dependencies() {
+  local missing_deps=()
+
+  for cmd in curl jq; do
+    if ! command -v "$cmd" &>/dev/null; then
+      missing_deps+=("$cmd")
+    fi
+  done
+
+  if [ ${#missing_deps[@]} -ne 0 ]; then
+    echo "Error: Missing required dependencies: ${missing_deps[*]}"
+    exit 1
+  fi
+}
+
+check_dependencies
+
 BEACON_NODE_URL=""
 VALIDATOR_START_INDEX=""
 VALIDATOR_STOP_INDEX=""
@@ -24,8 +42,8 @@ Usage: $(basename "$0") [OPTIONS]
 
 Options:
     --beacon-node-url              Beacon node URL
-    --validator_start_index        Starting index of validator range
-    --validator_stop_index         Stopping index of validator range
+    --validator-start-index        Starting index of validator range
+    --validator-stop-index         Stopping index of validator range
     -h, --help                     Show this help message
 EOF
   exit 1
@@ -38,11 +56,11 @@ while [[ $# -gt 0 ]]; do
       BEACON_NODE_URL="$2"
       shift 2
       ;;
-    --validator_start_index)
+    --validator-start-index)
       VALIDATOR_START_INDEX="$2"
       shift 2
       ;;
-    --validator_stop_index)
+    --validator-stop-index)
       VALIDATOR_STOP_INDEX="$2"
       shift 2
       ;;

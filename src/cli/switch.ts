@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 
-import { parseAndValidateValidatorPubKeys } from '../service/cli-validation';
 import { consolidate } from '../service/domain/consolidate';
+import { parseAndValidateValidatorPubKeys } from '../service/validation/cli';
 
 const switchWithdrawalCredentialTypeCommand = new Command();
 

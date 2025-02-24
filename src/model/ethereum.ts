@@ -17,3 +17,11 @@ export interface ExecutionLayerRequestTransaction {
   value: bigint;
   gasLimit: bigint;
 }
+
+export interface ValidatorResponse {
+  data: {
+    validator: {
+      withdrawal_credentials: string;
+    };
+  };
+}
