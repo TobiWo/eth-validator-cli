@@ -25,9 +25,9 @@ program
       `-n, --${networkOptionName} <network>`,
       'Ethereum network which will be used for request processing'
     )
-      .choices(['mekong', 'kurtosis_pectra_devnet6'])
+      .choices(['holesky', 'sepolia', 'mekong', 'local_devnet'])
       .makeOptionMandatory(true)
-      .default('mekong')
+      .default('local_devnet')
   )
   .requiredOption(
     `-r, --${jsonRpcOptionName} <jsonRpcUrl>`,
