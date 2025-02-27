@@ -10,10 +10,15 @@ export const networkConfig: Record<string, NetworkConfig> = {
     withdrawalContractAddress: '0x09Fc772D0857550724b07B850a4323f39112aAaA',
     chainId: 7078815900n
   },
-  local_devnet: {
+  local_pectra_devnet: {
     consolidationContractAddress: CONSOLIDATION_CONTRACT_ADDRESS,
     withdrawalContractAddress: WITHDRAWAL_CONTRACT_ADDRESS,
     chainId: 3151908n
+  },
+  pectra_devnet_7: {
+    consolidationContractAddress: CONSOLIDATION_CONTRACT_ADDRESS,
+    withdrawalContractAddress: WITHDRAWAL_CONTRACT_ADDRESS,
+    chainId: 7032118028n
   },
   holesky: {
     consolidationContractAddress: CONSOLIDATION_CONTRACT_ADDRESS,
