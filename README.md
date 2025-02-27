@@ -12,6 +12,7 @@ Currently it only supports private keys as secret. This will change soon with e.
 * Sepolia
 * Mekong
 * local kurtosis devnet (based on pectra devnet-6 specs)
+* pectra-devnet-7
 
 ## Features
 
