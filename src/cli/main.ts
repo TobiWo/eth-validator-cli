@@ -10,6 +10,7 @@ import {
 } from '../service/validation/cli';
 import { consolidateCommand } from './consolidate';
 import { switchWithdrawalCredentialTypeCommand } from './switch';
+import { withdrawCommand } from './withdraw';
 
 const program = new Command();
 
@@ -52,6 +53,7 @@ program
     validateNetwork(globalOptions.jsonRpcUrl, globalOptions.network);
   })
   .addCommand(consolidateCommand)
-  .addCommand(switchWithdrawalCredentialTypeCommand);
+  .addCommand(switchWithdrawalCredentialTypeCommand)
+  .addCommand(withdrawCommand);
 
 program.parseAsync(process.argv).then(() => {});

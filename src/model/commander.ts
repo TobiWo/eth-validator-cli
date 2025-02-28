@@ -3,6 +3,11 @@ export interface ConsolidationOptions {
   target: string;
 }
 
+export interface WithdrawOptions {
+  validator: string[];
+  amount: string;
+}
+
 export interface GlobalCliOptions {
   network: string;
   jsonRpcUrl: string;
