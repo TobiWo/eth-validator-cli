@@ -1,6 +1,6 @@
 import { PublicKey } from '@chainsafe/blst';
 import chalk from 'chalk';
-import { JsonRpcProvider } from 'ethers';
+import { JsonRpcProvider, parseUnits } from 'ethers';
 import { exit } from 'process';
 import { format } from 'util';
 
@@ -27,18 +27,23 @@ export function parseAndValidateNodeUrl(nodeUrl: string): string {
 }
 
 /**
- * Check if amount to withdraw is a number
+ * Check if amount to withdraw is a number and parse to 8-byte hexstring
  *
  * @param amount - The amount in ETH to withdraw from validator
- * @returns The amount in ETH to withdraw from validator
+ * @returns The amount as 8-byte hexstring
  */
-export function parseAndValidateAmount(amount: string): number {
+export function parseAndValidateWithdrawAmount(amount: string): string {
   const parsedAmount = parseFloat(amount);
   if (isNaN(parsedAmount)) {
     console.error(chalk.red(logging.INVALID_AMOUNT_ERROR));
     exit(1);
   }
-  return parsedAmount;
+  if (parsedAmount < 0.000001) {
+    console.error(chalk.red(logging.AMOUNT_TOO_LOW_ERROR));
+    exit(1);
+  }
+  const parsedGwei = parseUnits(parsedAmount.toString(), 'gwei');
+  return parsedGwei.toString(16).padStart(16, '0');
 }
 
 /**
