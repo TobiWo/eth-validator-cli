@@ -4,6 +4,7 @@ export const INVALID_PRIVATE_KEY_ERROR =
   'The provided private key does not have the correct format and/or length! Please double-check!';
 export const INVALID_URL_FORMAT_ERROR = 'The provided url should start with http:// or https://';
 export const INVALID_AMOUNT_ERROR = 'Amount should be a number';
+export const AMOUNT_TOO_LOW_ERROR = 'Amount too low. Minimum withdrawable amount is 0.000001 ETH.';
 export const INVALID_VALIDATOR_PUBKEY_ERROR = 'Supplied validator pubkey is not valid';
 export const INVALID_VALIDATORS_PUBKEY_ERROR =
   'One or many of the supplied validator pubkeys are not valid';
