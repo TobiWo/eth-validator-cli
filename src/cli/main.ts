@@ -9,6 +9,7 @@ import {
   validateNetwork
 } from '../service/validation/cli';
 import { consolidateCommand } from './consolidate';
+import { exitCommand } from './exit';
 import { switchWithdrawalCredentialTypeCommand } from './switch';
 import { withdrawCommand } from './withdraw';
 
@@ -54,6 +55,7 @@ program
   })
   .addCommand(consolidateCommand)
   .addCommand(switchWithdrawalCredentialTypeCommand)
-  .addCommand(withdrawCommand);
+  .addCommand(withdrawCommand)
+  .addCommand(exitCommand);
 
 program.parseAsync(process.argv).then(() => {});
