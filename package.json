@@ -1,6 +1,6 @@
 {
   "name": "eth-validator-cli",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "CLI tool to manage Ethereum validators",
   "license": "MIT",
   "author": {
