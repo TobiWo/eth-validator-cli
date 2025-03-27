@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 
-import { consolidate } from '../service/domain/consolidate';
+import { GlobalCliOptions, ValidatorOption } from '../model/commander';
+import { switchWithdrawalCredentialType } from '../service/domain/switch';
 import { parseAndValidateValidatorPubKeys } from '../service/validation/cli';
 
 const switchWithdrawalCredentialTypeCommand = new Command();
@@ -15,8 +16,9 @@ switchWithdrawalCredentialTypeCommand
     'Space separated list of validator pubkeys for which the withdrawal credential type will be changed to 0x02',
     parseAndValidateValidatorPubKeys
   )
-  .action(async (options, command) => {
-    await consolidate(command.parent.opts(), options.validator);
+  .action(async (options: ValidatorOption, command) => {
+    const globalOptions: GlobalCliOptions = command.parent.opts();
+    await switchWithdrawalCredentialType(globalOptions, options.validator);
   });
 
 export { switchWithdrawalCredentialTypeCommand };
