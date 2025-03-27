@@ -34,10 +34,9 @@ network_params:
   churn_limit_quotient: 16
   seconds_per_slot: 12
 additional_services:
-  - 'tx_spammer'
-  - 'blob_spammer'
-  - 'el_forkmon'
-  - 'beacon_metrics_gazer'
+  - 'tx_fuzz'
+  - 'spamoor_blob'
+  - 'forkmon'
   - 'dora'
   - 'prometheus_grafana'
   - 'blockscout'
