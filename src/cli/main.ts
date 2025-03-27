@@ -1,7 +1,8 @@
 #! /usr/bin/env node
-
+import chalk from 'chalk';
 import { Command, Option } from 'commander';
 
+import { DISCLAIMER_INFO } from '../constants/logging';
 import { GlobalCliOptions } from '../model/commander';
 import {
   parseAndValidateMaxNumberOfRequestsPerBlock,
@@ -22,6 +23,8 @@ const maxRequestsPerBlockOptionName = 'max-requests-per-block';
 
 program
   .name('eth-validator-cli')
+  .description(`CLI tool for managing Ethereum validators.\n${chalk.yellow(DISCLAIMER_INFO)}`)
+  .version('0.4.0')
   .addOption(
     new Option(
       `-n, --${networkOptionName} <network>`,
