@@ -8,20 +8,19 @@ Currently it only supports private keys as secret. This will change soon with e.
 
 ## Supported networks
 
+* Hoodi
 * Holesky
 * Sepolia
-* Mekong
 * local kurtosis devnet (based on pectra devnet-6 specs)
-* pectra-devnet-7
 
 ## Features
 
 * Consolidate one or multiple source validators to one target validator
-* Switch withdrawal credentials from type 0x01 to 0x02 (compounding)
+* Switch withdrawal credentials from type 0x01 to 0x02 (compounding) for one or multiple validators
+* Partially withdraw ETH from one or many validators
+* Exit one or many validators
 
 **Note: The application will request the secret e.g. the private key during runtime. You do not need to put the secret into the start command.**
-
-**Note: Withdrawals and exits are not available yet but will be added soon.**
 
 ## Available cli options and commands
 
@@ -49,25 +48,25 @@ Print the help message with `--help`. This works also for every subcommand.
 | -s | --source | Space separated list of validator pubkeys which will be consolidated into the target validator |
 | -t | --target | Target validator pubkey |
 
-## Usage
+### Withdraw
 
-1. Send consolidation request
+| Short Option | Long Option | Description |
+| --- | --- | --- |
+| -v | --validator | Space separated list of validator pubkeys for which the withdrawal will be executed |
+| -a | --amount | Amount of ETH which will be withdrawn from the validator(s) (in ETH notation e.g. 0.001) |
 
-    ```bash
-    ./eth-validator-cli --network <NETWORK_NAME> --json-rpc-url <CONNECTION_STRING_TO_JSON_RPC_ENDPOINT> --beacon-api-url <CONNECTION_STRING_TO_BEACON_API_ENDPOINT> consolidate --source <SPACE_SEPARATED_LIST_OF_VALIDATORS_WHICH_SHOULD_BE_CONSOLIDATED_INTO_TARGET_VALIDATOR> --target <TARGET_VALIDATOR>
-    ```
+### Exit
 
-1. Send request for switching withdrawal credential type
-
-    ```bash
-    ./eth-validator-cli --network <NETWORK_NAME> --json-rpc-url <CONNECTION_STRING_TO_JSON_RPC_ENDPOINT> --beacon-api-url <CONNECTION_STRING_TO_BEACON_API_ENDPOINT> switch --validator <SPACE_SEPARATED_LIST_OF_VALIDATORS_FOR_WHICH_TO_SWITCH_WITHDRAWAL_CREDENTIAL_TYPE>
-    ```
+| Short Option | Long Option | Description |
+| --- | --- | --- |
+| -v | --validator | Space separated list of validator pubkeys which will be exited |
 
 ## Build the application
 
-There are currently only x64 binaries available in the release section. ARM64 will follow soon. If you want to run the application on ARM please build it by youw own.
+There are currently only x64 binaries available in the release section. ARM64 will follow soon. If you want to run the application on ARM please build it by your own.
 
 1. Install [Node 22](https://nodejs.org/en)
+    * **Required node version: <= v22.12.0**
 1. Install dependencies
 
     ```bash
@@ -86,7 +85,7 @@ There are currently only x64 binaries available in the release section. ARM64 wi
 
 ## Run local pectra devnet
 
-You can find a kurtosis devnet specification file in the `scripts` folder in order to run a local Ethereum devnet based on pectra devnet-6 specs, which is contains the final specs for public testnets like holesky but also mainnet.
+You can find a kurtosis devnet specification file in the `scripts` folder in order to run a local Ethereum devnet based on pectra devnet-6 specs, which contains the final specs for public testnets like holesky but also mainnet.
 
 ### Requirements
 

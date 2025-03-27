@@ -9,7 +9,7 @@ import { createEthereumConnection } from './ethereum';
 import { sendExecutionLayerRequests } from './request';
 
 /**
- * Consolidate one or many validators to one or switch withdrawal credential type from 0x01 to 0x02
+ * Consolidate one or many validators to one target validator / Switch withdrawal credential type from 0x01 to 0x02 for one or many validators
  *
  * @param globalOptions - The global cli options
  * @param sourceValidatorPubkeys - The validator pubkey(s) which will be consolidated / for which withdrawal credential type will be switched
@@ -20,8 +20,10 @@ export async function consolidate(
   sourceValidatorPubkeys: string[],
   targetValidatorPubkey?: string
 ): Promise<void> {
-  await checkWithdrawalCredentialType(globalOptions.beaconApiUrl, targetValidatorPubkey);
-  logConsolidationWarning(targetValidatorPubkey);
+  if (targetValidatorPubkey) {
+    await checkWithdrawalCredentialType(globalOptions.beaconApiUrl, [targetValidatorPubkey]);
+    logConsolidationWarning();
+  }
   const ethereumConnection = await createEthereumConnection(globalOptions.jsonRpcUrl);
   const consolidationRequestData: string[] = [];
   for (const sourceValidator of sourceValidatorPubkeys) {
@@ -59,11 +61,7 @@ function createConsolidationRequestData(
 
 /**
  * Log consolidation specific warning
- *
- * @param targetValidatorPubkey - The target validator for consolidation
  */
-function logConsolidationWarning(targetValidatorPubkey?: string): void {
-  if (targetValidatorPubkey) {
-    console.log(chalk.yellow(logging.WITHDRAWAL_CREDENTIAL_WARNING));
-  }
+function logConsolidationWarning(): void {
+  console.log(chalk.yellow(logging.WITHDRAWAL_CREDENTIAL_WARNING));
 }

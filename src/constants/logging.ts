@@ -4,6 +4,7 @@ export const INVALID_PRIVATE_KEY_ERROR =
   'The provided private key does not have the correct format and/or length! Please double-check!';
 export const INVALID_URL_FORMAT_ERROR = 'The provided url should start with http:// or https://';
 export const INVALID_AMOUNT_ERROR = 'Amount should be a number';
+export const AMOUNT_TOO_LOW_ERROR = 'Amount too low. Minimum withdrawable amount is 0.000001 ETH.';
 export const INVALID_VALIDATOR_PUBKEY_ERROR = 'Supplied validator pubkey is not valid';
 export const INVALID_VALIDATORS_PUBKEY_ERROR =
   'One or many of the supplied validator pubkeys are not valid';
@@ -31,10 +32,14 @@ export const SENDING_TRANSACTION_ERROR = 'Error Sending Transaction:';
 export const BROADCASTING_EL_REQUEST_INFO = 'Broadcasting execution layer request:';
 export const MINED_EL_REQUEST_INFO = 'Mined execution layer request:';
 export const PROMPT_PRIVATE_KEY_INFO = 'Private key for 0x01 or 0x02 withdrawal credentials:';
+export const DISCLAIMER_INFO =
+  'The eth-validator-cli is in active development and currently missing most pre-transaction checks (see here: https://github.com/TobiWo/eth-validator-cli/issues/14). Please double-check your inputs before executing a command.';
 
 // Warnings
 export const WITHDRAWAL_CREDENTIAL_WARNING =
   'Attention: You can only consolidate validators with the same withdrawal credentials!';
+export const EXIT_WARNING =
+  'Attention: Your validators need to have withdrawal credentials of type 0x01 or 0x02 in order to be able to exit via an execution layer request.';
 
 // Other errors
 export const GENERAL_WRONG_WITHDRAWAL_CREDENTIALS_ERROR = `Your target validator has withdrawal credentials of type: %s.

@@ -27,15 +27,19 @@ export function parseAndValidateNodeUrl(nodeUrl: string): string {
 }
 
 /**
- * Check if amount to withdraw is a number
+ * Check if amount to withdraw is a number and parse to 8-byte hexstring
  *
  * @param amount - The amount in ETH to withdraw from validator
- * @returns The amount in ETH to withdraw from validator
+ * @returns The amount as 8-byte hexstring
  */
-export function parseAndValidateAmount(amount: string): number {
+export function parseAndValidateWithdrawAmount(amount: string): number {
   const parsedAmount = parseFloat(amount);
   if (isNaN(parsedAmount)) {
     console.error(chalk.red(logging.INVALID_AMOUNT_ERROR));
+    exit(1);
+  }
+  if (parsedAmount < 0.000001) {
+    console.error(chalk.red(logging.AMOUNT_TOO_LOW_ERROR));
     exit(1);
   }
   return parsedAmount;
