@@ -36,6 +36,8 @@ export const PROMPT_PRIVATE_KEY_INFO = 'Private key for 0x01 or 0x02 withdrawal 
 // Warnings
 export const WITHDRAWAL_CREDENTIAL_WARNING =
   'Attention: You can only consolidate validators with the same withdrawal credentials!';
+export const EXIT_WARNING =
+  'Attention: Your validators need to have withdrawal credentials of type 0x01 or 0x02 in order to be able to exit via an execution layer request.';
 
 // Other errors
 export const GENERAL_WRONG_WITHDRAWAL_CREDENTIALS_ERROR = `Your target validator has withdrawal credentials of type: %s.
