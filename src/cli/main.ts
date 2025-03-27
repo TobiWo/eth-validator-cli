@@ -30,9 +30,9 @@ program
       `-n, --${networkOptionName} <network>`,
       'Ethereum network which will be used for request processing'
     )
-      .choices(['holesky', 'sepolia', 'mekong', 'local_pectra_devnet', 'pectra_devnet_7'])
+      .choices(['hoodi', 'holesky', 'sepolia', 'kurtosis_pectra_devnet'])
       .makeOptionMandatory(true)
-      .default('local_pectra_devnet')
+      .default('kurtosis_pectra_devnet')
   )
   .requiredOption(
     `-r, --${jsonRpcOptionName} <jsonRpcUrl>`,
@@ -53,6 +53,7 @@ program
     10
   )
   .hook('preSubcommand', (thisCommand) => {
+    console.log(chalk.yellow(DISCLAIMER_INFO));
     const globalOptions: GlobalCliOptions = thisCommand.opts();
     validateNetwork(globalOptions.jsonRpcUrl, globalOptions.network);
   })
