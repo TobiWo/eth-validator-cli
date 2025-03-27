@@ -1,26 +1,31 @@
+import { parseUnits } from 'ethers';
+
 import { PREFIX_0x } from '../../constants/application';
 import { GlobalCliOptions } from '../../model/commander';
 import { networkConfig } from '../../network-config';
+import { checkWithdrawalCredentialType } from '../validation/pre-request';
 import { createEthereumConnection } from './ethereum';
 import { sendExecutionLayerRequests } from './request';
 
 /**
- * Withdraw a provided amount from one or many validators
+ * Withdraw the provided amount from one or many validators / Exit one or many validators
  *
  * @param globalOptions - The global cli options
- * @param validatorPubkeys - The validator pubkey(s) which are used to withdraw the provided amount or for an exit
- * @param amount - 8-byte hexstring representation of the withdraw amount
+ * @param validatorPubkeys - The validator pubkey(s) from which the provided amount is withdrawn / which are exited
+ * @param amount - The amount which will be withdrawn
  */
 export async function withdraw(
   globalOptions: GlobalCliOptions,
   validatorPubkeys: string[],
-  amount: string
+  amount: number
 ): Promise<void> {
+  if (amount > 0) {
+    checkWithdrawalCredentialType(globalOptions.beaconApiUrl, validatorPubkeys);
+  }
   const ethereumConnection = await createEthereumConnection(globalOptions.jsonRpcUrl);
   const withdrawalRequestData: string[] = [];
   for (const validator of validatorPubkeys) {
-    const request = PREFIX_0x.concat(validator.substring(2)).concat(amount);
-    withdrawalRequestData.push(request);
+    withdrawalRequestData.push(createWithdrawRequestData(validator, amount));
   }
   await sendExecutionLayerRequests(
     networkConfig[globalOptions.network].withdrawalContractAddress,
@@ -29,4 +34,17 @@ export async function withdraw(
     withdrawalRequestData,
     globalOptions.maxRequestsPerBlock
   );
+}
+
+/**
+ * Create withdraw request data
+ *
+ * @param validatorPubkey - The validator pubkey
+ * @param amount - The amount in ETH to withdraw from validator (0 for exit)
+ * @returns The withdraw request data
+ */
+function createWithdrawRequestData(validatorPubkey: string, amount: number): string {
+  const parsedGwei = parseUnits(amount.toString(), 'gwei');
+  const parsedGweiHex = parsedGwei.toString(16).padStart(16, '0');
+  return PREFIX_0x.concat(validatorPubkey.substring(2)).concat(parsedGweiHex);
 }
