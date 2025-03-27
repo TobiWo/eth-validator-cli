@@ -12,37 +12,38 @@ import * as logging from '../../constants/logging';
 import { ValidatorResponse } from '../../model/ethereum';
 
 /**
- * Check if the target validator's withdrawal credentials are of type compounding
+ * Check if the provided validator withdrawal credentials are of type compounding
  *
  * @param beaconApiUrl - The beacon api url
- * @param targetValidatorPubKey - The target validator's public key
+ * @param validatorPubkeys - The validator public keys to check
  */
 export async function checkWithdrawalCredentialType(
   beaconApiUrl: string,
-  targetValidatorPubKey?: string
+  validatorPubkeys: string[]
 ): Promise<void> {
-  if (!targetValidatorPubKey) return;
-  try {
-    const url = `${beaconApiUrl}${VALIDATOR_STATE_BEACON_API_ENDPOINT}${targetValidatorPubKey}`;
-    const response = await fetch(url);
+  for (const validatorPubkey of validatorPubkeys) {
+    try {
+      const url = `${beaconApiUrl}${VALIDATOR_STATE_BEACON_API_ENDPOINT}${validatorPubkey}`;
+      const response = await fetch(url);
 
-    if (!response.ok) {
-      await handleErrorResponse(response);
-    }
+      if (!response.ok) {
+        await handleErrorResponse(response);
+      }
 
-    const data = (await response.json()) as ValidatorResponse;
+      const data = (await response.json()) as ValidatorResponse;
 
-    const withdrawalCredentialsType = data.data.validator.withdrawal_credentials.substring(0, 4);
-    if (withdrawalCredentialsType !== WITHDRAWAL_CREDENTIALS_0x02) {
-      await handleWithdrawalCredentialsType(withdrawalCredentialsType);
+      const withdrawalCredentialsType = data.data.validator.withdrawal_credentials.substring(0, 4);
+      if (withdrawalCredentialsType !== WITHDRAWAL_CREDENTIALS_0x02) {
+        await handleWithdrawalCredentialsType(withdrawalCredentialsType);
+      }
+    } catch (error) {
+      if (error instanceof TypeError) {
+        console.error(chalk.red(logging.BEACON_API_ERROR, error.cause));
+      } else {
+        console.error(chalk.red(logging.UNEXPECTED_BEACON_API_ERROR, error));
+      }
+      exit(1);
     }
-  } catch (error) {
-    if (error instanceof TypeError) {
-      console.error(chalk.red(logging.BEACON_API_ERROR, error.cause));
-    } else {
-      console.error(chalk.red(logging.UNEXPECTED_BEACON_API_ERROR, error));
-    }
-    exit(1);
   }
 }
 
